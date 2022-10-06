@@ -1,0 +1,68 @@
+@font-face {
+    font-family: 'VT323';
+    src: url('VT323/VT323-Regular.ttf') format('truetype');
+}
+
+html, button {
+    font-family: VT323;
+} 
+
+h1 {
+    font-size: 2rem;
+}
+h2 {
+    font-size: 1.5rem;
+}
+
+button {
+    min-width: 100px;
+}
+
+button, input, label {
+    font-size: 1.3rem;
+}
+
+button, input {
+    margin: 10px;
+    padding: 10px;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.content {
+    padding: 1rem;
+    margin: 2rem;
+}
+
+#typeForm, #lockedForm {
+    background: black;
+    padding: 1rem;
+    color: #fabfff;
+    width: 60%;
+}
+
+#lockedForm {
+    width: 95%;
+    margin-top: 70px;
+}
+
+#ageForm, #monthForm, #weekForm, #dayForm {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 540px;
+}
+
+iframe { 
+    border: 12px solid #fabfff;
+    display: none;
+}
+
+.dotted {
+    border-bottom: 2px dotted #fabfff;
+    padding-bottom: 12px;
+}
