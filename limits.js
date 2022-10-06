@@ -151,11 +151,3 @@ class ExistingLimitCustomer extends BaseLimitCustomer {
         }; 
     }
 };
-
-const existingCustomerLimitsValidation = () => {
-
-    //
-    // Låst spelgräns?
-    //
-};
-
