@@ -1,25 +1,3 @@
-const thresholdValues = {
-    minAmount: 25,
-    threshold: 10000,
-    thresholdYoungster: 1000
-};
-
-const medianValues = {
-    medianMonth: 5000,
-    medianWeek: 2000,
-    medianDay: 500
-};
-
-const existingLimits = {
-    monthlyAmount: 1001,
-    monthlyAmountIsValid: true,
-    weeklyAmount: 560,
-    weeklyAmountIsValid: true,
-    dailyAmount: 400,
-    dailyAmountIsValid: true,
-    areValid: true
-};
-
 const enableInput = (id, value) => {
     const input = document.getElementById(id);
     input.disabled = false;
@@ -47,7 +25,6 @@ const resetInput = (id, value) => {
 //
 // Constants
 //
-const EXISTING_LIMIT_CUSTOMER = 'ExistingLimitCustomer';
 const MONTH = 'month';
 const WEEK = 'week';
 const DAY = 'day';
@@ -64,7 +41,7 @@ window.onload = function() {
     let locked;
 
     //
-    // Type form
+    // Type form - For development test purposes only
     //
     const lockedForm = document.getElementById('lockedForm');
     lockedForm.addEventListener(SUBMIT, function(event) {
@@ -75,13 +52,13 @@ window.onload = function() {
         const data = event.formData;
         const values = [...data.values()];
         locked = values[0];
-        if (customer !== undefined && customer.type == EXISTING_LIMIT_CUSTOMER) {
-            customer.limits.areLocked = locked !== undefined;
+        if (customer !== undefined && customer.isExistingCustomer) {
+            customer.limits.increaseLock = locked !== undefined;
         }
     });
 
     //
-    // Type form
+    // Type form - For development test purposes only
     //
     const typeForm = document.getElementById('typeForm');
     typeForm.addEventListener(SUBMIT, function(event) {
@@ -108,12 +85,12 @@ window.onload = function() {
         const data = event.formData;
         const values = [...data.values()];
         const age = values[0];
-        const areLocked = locked !== undefined;
+        const increaseLock = locked !== undefined;
         customer = isNew ? 
                     new NewLimitCustomer(age, medianValues, thresholdValues) : 
-                    new ExistingLimitCustomer(age, areLocked, existingLimits, medianValues, thresholdValues);
+                    new ExistingLimitCustomer(age, increaseLock, existingLimits, medianValues, thresholdValues);
 
-        if (customer.type == EXISTING_LIMIT_CUSTOMER) {
+        if (customer.isExistingCustomer) {
             enableInput(MONTH, customer.limits.monthlyAmount);
             enableInput(WEEK, customer.limits.weeklyAmount);
             enableInput(DAY, customer.limits.dailyAmount);
@@ -137,14 +114,14 @@ window.onload = function() {
         let input = values[0];
         input = Number(input);
 
-        if (customer.type == EXISTING_LIMIT_CUSTOMER && customer.limits.areLocked && customer.isAmountHigherThanLimit(input, MONTH)) {
+        if (customer.isExistingCustomer && customer.limits.increaseLock && customer.isAmountHigherThanLimit(input, MONTH)) {
             alert('Höjning av gränser låst. Din nuvarande satta gräns är ' + customer.limits.monthlyAmount);
             resetInput(MONTH, customer.limits.monthlyAmount);
         } else {
             customer.limits.setMonthly = input;
             if (customer.limits.monthlyAmountIsValid) {
                 if (customer.limits.monthlyAmountIsHigherThanMedian) {
-                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianMonth + '   AVBRYT  //  JAG ÄR SÄKER');
+                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDepositLimitPerMonth + '   AVBRYT  //  JAG ÄR SÄKER');
                     //
                     // TO DO: Avbryt / Jag är säker
                     // if (jag är säker) this.setMonthlyIsValid(true); else ;
@@ -186,13 +163,13 @@ window.onload = function() {
         let input = values[0];
         input = Number(input);
 
-        if (customer.type == EXISTING_LIMIT_CUSTOMER && customer.limits.areLocked && customer.isAmountHigherThanLimit(input, WEEK)) {
+        if (customer.isExistingCustomer && customer.limits.increaseLock && customer.isAmountHigherThanLimit(input, WEEK)) {
             alert('Höjning av gränser låst. Din nuvarande satta gräns är ' + customer.limits.weeklyAmount);
             resetInput(WEEK, customer.limits.weeklyAmount);
         } else {
             customer.limits.setWeekly = input;
             if (!customer.limits.weeklyAmountIsValid) {
-                if (customer.type == EXISTING_LIMIT_CUSTOMER) {
+                if (customer.isExistingCustomer) {
                     alert('Din veckogräns är högre än din månadsgräns. Vill du ändra månadsgräns?    AVBRYT  //  JAJJEMÄN');
                     //
                     // TO DO: Avbryt / Jag är säker
@@ -204,7 +181,7 @@ window.onload = function() {
                 }
             } else {
                 if (customer.limits.weeklyAmountIsHigherThanMedian) {
-                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianWeek + '   AVBRYT  //  JAG ÄR SÄKER');
+                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDepositLimitPerWeek + '   AVBRYT  //  JAG ÄR SÄKER');
                 }
                 enableInput(DAY);
             }
@@ -225,13 +202,13 @@ window.onload = function() {
         let input = values[0];
         input = Number(input);
 
-        if (customer.type == EXISTING_LIMIT_CUSTOMER && customer.limits.areLocked && customer.isAmountHigherThanLimit(input, DAY)) {
+        if (customer.isExistingCustomer && customer.limits.increaseLock && customer.isAmountHigherThanLimit(input, DAY)) {
             alert('Höjning av gränser låst. Din nuvarande satta gräns är ' + customer.limits.dailyAmount);
             resetInput(DAY, customer.limits.dailyAmount);
         } else {
             customer.limits.setDaily = input;
             if (!customer.limits.dailyAmountIsValid) {
-                if (customer.type == EXISTING_LIMIT_CUSTOMER) {
+                if (customer.isExistingCustomer) {
                     alert('Din dagsgräns är högre än din veckogräns. Vill du ändra veckogräns?    AVBRYT  //  JAJJEMÄN');
                     //
                     // TO DO: Avbryt / Jag är säker
@@ -243,7 +220,7 @@ window.onload = function() {
                 }
             } else if (customer.limits.areValid) {
                 if (customer.limits.dailyAmountIsHigherThanMedian) {
-                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDay + '   AVBRYT  //  JAG ÄR SÄKER');
+                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDepositLimitPerDay + '   AVBRYT  //  JAG ÄR SÄKER');
                 }
                 document.getElementById('iframe').style.display = 'block';
                 alert('DU VARVADE SPELET! :)');

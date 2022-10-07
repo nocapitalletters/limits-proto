@@ -8,11 +8,15 @@ class BaseLimitCustomer {
         this.minAmount = thresholdValues.minAmount,
         this.isYoungster = age < 20,
         this.monthlyThresholdAmount = this.isYoungster ? thresholdValues.thresholdYoungster : thresholdValues.threshold,
-        this.type = this.constructor.name
+        this.type = this.constructor.name,
+        this.isExistingCustomer = this.constructor.name === "ExistingLimitCustomer",
         this.limits = {
-            medianMonth: medianValues.medianMonth,
-            medianWeek: medianValues.medianWeek,
-            medianDay: medianValues.medianDay,
+            medianDepositLimitPerDay: medianValues.medianDepositLimitPerDay,
+            medianDepositLimitPerWeek: medianValues.medianDepositLimitPerWeek,
+            medianDepositLimitPerMonth: medianValues.medianDepositLimitPerMonth,
+            medianTimeLimitPerDay: medianValues.medianTimeLimitPerDay,
+            medianTimeLimitPerWeek: medianValues.medianTimeLimitPerWeek,
+            medianTimeLimitPerMonth: medianValues.medianTimeLimitPerMonth,
             monthlyAmount: 0,
             monthlyAmountIsValid: false,
             monthlyAmountIsHigherThanMedian: false,
@@ -82,13 +86,13 @@ class BaseLimitCustomer {
                 this.setAreValid();
             },
              setMonthlyIsHigherThanMedian() {
-                this.monthlyAmountIsHigherThanMedian = this.monthlyAmount > this.medianMonth;
+                this.monthlyAmountIsHigherThanMedian = this.monthlyAmount > this.medianDepositLimitPerMonth;
             },
             setWeeklyIsHigherThanMedian() {
-                this.weeklyAmountIsHigherThanMedian = this.weeklyAmount > this.medianWeek;
+                this.weeklyAmountIsHigherThanMedian = this.weeklyAmount > this.medianDepositLimitPerWeek;
             },
             setDailyIsHigherThanMedian() {
-                this.dailyAmountIsHigherThanMedian = this.dailyAmount > this.medianDay;
+                this.dailyAmountIsHigherThanMedian = this.dailyAmount > this.medianDepositLimitPerDay;
             },
             setAreValid: () => {
                 this.limits.areValid =
@@ -121,12 +125,12 @@ class NewLimitCustomer extends BaseLimitCustomer {};
 class ExistingLimitCustomer extends BaseLimitCustomer {
     /**
      * @param {number} age
-     * @param {boolean} areLocked
+     * @param {boolean} increaseLock
      * @param {object} existingLimits
      * @param {object} medianValues
      * @param {object} thresholdValues
     */
-    constructor(age, areLocked, existingLimits, medianValues, thresholdValues) {
+    constructor(age, increaseLock, existingLimits, medianValues, thresholdValues) {
         super(age, medianValues, thresholdValues);
         this.limits.monthlyAmount = existingLimits.monthlyAmount,
         this.limits.monthlyAmountIsValid = existingLimits.monthlyAmountIsValid,
@@ -135,7 +139,7 @@ class ExistingLimitCustomer extends BaseLimitCustomer {
         this.limits.dailyAmount = existingLimits.dailyAmount,
         this.limits.dailyAmountIsValid = existingLimits.dailyAmountIsValid,
         this.limits.areValid = existingLimits.areValid,
-        this.limits.areLocked = areLocked,
+        this.limits.increaseLock = increaseLock,
 
         this.isAmountHigherThanLimit = (amount, limitType) => {
             switch (limitType) {
