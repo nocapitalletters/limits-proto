@@ -96,6 +96,8 @@ window.onload = function() {
             enableInput(DAY, customer.limits.dailyAmount);
         } else {
             enableInput(MONTH);
+            enableInput(WEEK);
+            enableInput(DAY);
         }
         
     });
@@ -119,33 +121,36 @@ window.onload = function() {
             resetInput(MONTH, customer.limits.monthlyAmount);
         } else {
             customer.limits.setMonthly = input;
-            if (customer.limits.monthlyAmountIsValid) {
-                if (customer.limits.monthlyAmountIsHigherThanMedian) {
-                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDepositLimitPerMonth + '   AVBRYT  //  JAG ÄR SÄKER');
+            if (!customer.limits.monthlyAmountIsValid) {
+                if (customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
+                    alert('Din veckogräns är högre än din månadsgräns');
                     //
-                    // TO DO: Avbryt / Jag är säker
-                    // if (jag är säker) this.setMonthlyIsValid(true); else ;
+                    // We do not want to raise monthly limit, instead encourage to lower weekly limit -> Switch validity between month and week
                     //
-                }
-                enableInput(WEEK);
-            } else if (input < customer.minAmount) {
-                alert("Minsta belopp är 25");
-                resetForm(MONTH_FORM);
-            } else if (customer.isYoungster) {
-                alert('Eftersom du är under 20 år så är din maxgräns ' + customer.monthlyThresholdAmount);
-                resetForm(MONTH_FORM);
-            } else {
-                alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount + '   AVBRYT  //  JAG ÄR SÄKER');
-                //
-                // TO DO: Avbryt / Jag är säker
-                // if (Avbryt) this.setMonthlyIsValid(false); else ;
-                //
-                customer.limits.setMonthlyIsValid = true;
-                enableInput(WEEK);
-                //
-                // Unlock weekly --> atom state for weekly input: disabled = false
-                //
+                    customer.limits.monthlyAmount = input;
+                    customer.limits.monthlyAmountIsValid = true;
+                    customer.limits.weeklyAmountIsValid = false;
+
+                } else if (input < customer.minAmount) {
+                    alert("Minsta belopp är 25");
+                } else if (customer.isYoungster) {
+                    alert('Eftersom du är under 20 år så är din maxgräns ' + customer.monthlyThresholdAmount);
+                } 
             }
+            else {
+                if (customer.limits.monthlyAmountIsHigherThanMedian) {
+                    alert('Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerMonth);
+                }
+                if (customer.limits.areValid) {
+                    if (customer.limits.monthlyAmount > customer.monthlyThresholdAmount) {
+                        alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount);
+                    }
+                    document.getElementById('iframe').style.display = 'block';
+                    alert('DU VARVADE SPELET! :)');
+                    console.log(customer);
+                }
+            }
+            
         }
     });
 
@@ -169,21 +174,30 @@ window.onload = function() {
         } else {
             customer.limits.setWeekly = input;
             if (!customer.limits.weeklyAmountIsValid) {
-                if (customer.isExistingCustomer) {
-                    alert('Din veckogräns är högre än din månadsgräns. Vill du ändra månadsgräns?    AVBRYT  //  JAJJEMÄN');
+                if (customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
+                    alert('Din veckogräns är högre än din månadsgräns.');
+
+                } else if (customer.limits.dailyAmount > customer.limits.weeklyAmount) {
+                    alert('Din dagsgräns är högre än din veckogräns.');
                     //
-                    // TO DO: Avbryt / Jag är säker
-                    // if (jag är säker) this.setWeeklyIsValid(true); ÄNDRA OCKSÅ MÅNADSGRÄNS!!
+                    // We do not want to raise weekly limit, instead encourage to lower daily limit -> Switch validity between week and day
                     //
-                } else {
-                    alert('välj en gräns mellan ' + customer.minAmount + ' och ' + customer.limits.monthlyAmount);
-                    resetForm(WEEK_FORM);
+                    customer.limits.weeklyAmount = input;
+                    customer.limits.weeklyAmountIsValid = true;
+                    customer.limits.dailyAmountIsValid = false;
                 }
             } else {
                 if (customer.limits.weeklyAmountIsHigherThanMedian) {
-                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDepositLimitPerWeek + '   AVBRYT  //  JAG ÄR SÄKER');
+                    alert('Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerWeek);
                 }
-                enableInput(DAY);
+                if (customer.limits.areValid) {
+                    if (customer.limits.monthlyAmount > customer.monthlyThresholdAmount) {
+                        alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount);
+                    }
+                    document.getElementById('iframe').style.display = 'block';
+                    alert('DU VARVADE SPELET! :)');
+                    console.log(customer);
+                }
             }
         };
     });
@@ -208,26 +222,23 @@ window.onload = function() {
         } else {
             customer.limits.setDaily = input;
             if (!customer.limits.dailyAmountIsValid) {
-                if (customer.isExistingCustomer) {
-                    alert('Din dagsgräns är högre än din veckogräns. Vill du ändra veckogräns?    AVBRYT  //  JAJJEMÄN');
-                    //
-                    // TO DO: Avbryt / Jag är säker
-                    // if (jag är säker) this.setWeeklyIsValid(true); ÄNDRA OCKSÅ VECKOGRÄNS!!
-                    //
-                } else {
-                    alert('välj en gräns mellan ' + customer.minAmount + ' och ' + customer.limits.weeklyAmount);
-                    resetForm(DAY_FORM);
+                if (customer.limits.dailyAmount > customer.limits.weeklyAmount) {
+                    alert('Din dagsgräns är högre än din veckogräns.');
                 }
-            } else if (customer.limits.areValid) {
+            } 
+            else {
                 if (customer.limits.dailyAmountIsHigherThanMedian) {
-                    alert('Du har satt ett högre värden än medianvärdet som är ' + customer.limits.medianDepositLimitPerDay + '   AVBRYT  //  JAG ÄR SÄKER');
+                    alert('Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerDay);
                 }
-                document.getElementById('iframe').style.display = 'block';
-                alert('DU VARVADE SPELET! :)');
-                console.log(customer);
-            } else {
-                alert('Nåt är inte rätt... sparka på stoffe så han fixar buggen :/');
-            };
+                if (customer.limits.areValid) {
+                    if (customer.limits.monthlyAmount > customer.monthlyThresholdAmount) {
+                        alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount);
+                    }
+                    document.getElementById('iframe').style.display = 'block';
+                    alert('DU VARVADE SPELET! :)');
+                    console.log(customer);
+                }
+            }
         };        
     });
 }
