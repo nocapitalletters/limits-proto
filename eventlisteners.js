@@ -28,23 +28,24 @@ const renderInputErrorClass = (customer) => {
     weekInput.classList.remove(ERROR_CSS_CLASS);
     monthInput.classList.remove(ERROR_CSS_CLASS);
 
-    if (customer.limits.dailyAmountIsChanged && !customer.limits.dailyAmountIsValid) {
-        dayInput.classList.add(ERROR_CSS_CLASS);
-    } else if (customer.limits.weeklyAmountIsChanged && !customer.limits.weeklyAmountIsValid) {
-        weekInput.classList.add(ERROR_CSS_CLASS);
-    } else if (customer.limits.monthlyAmountIsChanged && !customer.limits.monthlyAmountIsValid) {
-        monthInput.classList.add(ERROR_CSS_CLASS);
+    if (!customer.isExistingCustomer ) {
+        if (customer.limits.dailyAmountIsChanged && !customer.limits.dailyAmountIsValid) {
+            dayInput.classList.add(ERROR_CSS_CLASS);
+        } else if (customer.limits.weeklyAmountIsChanged && !customer.limits.weeklyAmountIsValid) {
+            weekInput.classList.add(ERROR_CSS_CLASS);
+        } else if (customer.limits.monthlyAmountIsChanged && !customer.limits.monthlyAmountIsValid) {
+            monthInput.classList.add(ERROR_CSS_CLASS);
+        }
+    } else {
+        if (!customer.limits.dailyAmountIsValid) {
+            dayInput.classList.add(ERROR_CSS_CLASS);
+        } else if (!customer.limits.weeklyAmountIsValid) {
+            weekInput.classList.add(ERROR_CSS_CLASS);
+        } else if (!customer.limits.monthlyAmountIsValid) {
+            monthInput.classList.add(ERROR_CSS_CLASS);
+        }
     }
 };
-
-const resetForm = (id, value) => {
-    const form = document.getElementById(id);
-    if (value !== undefined) {
-        input.value = value;
-    } else {
-        form.reset();
-    }
-}
 
 const resetInput = (id, value) => {
     if (value !== undefined) {
