@@ -1,3 +1,16 @@
+//
+// Constants
+//
+const MONTH = 'month';
+const WEEK = 'week';
+const DAY = 'day';
+const MONTH_FORM = 'monthForm';
+const WEEK_FORM = 'weekForm';
+const DAY_FORM = 'dayForm';
+const SUBMIT = 'submit';
+const FORMDATA = 'formdata';
+const ERROR_CSS_CLASS = 'error';
+
 const enableInput = (id, value) => {
     const input = document.getElementById(id);
     input.disabled = false;
@@ -5,6 +18,23 @@ const enableInput = (id, value) => {
     if (value !== undefined) {
         input.value = value;
     };
+};
+
+const renderInputErrorClass = (customer) => {
+    const dayInput = document.getElementById(DAY);
+    const weekInput = document.getElementById(WEEK);
+    const monthInput = document.getElementById(MONTH);
+    dayInput.classList.remove(ERROR_CSS_CLASS);
+    weekInput.classList.remove(ERROR_CSS_CLASS);
+    monthInput.classList.remove(ERROR_CSS_CLASS);
+
+    if (customer.limits.dailyAmountIsChanged && !customer.limits.dailyAmountIsValid) {
+        dayInput.classList.add(ERROR_CSS_CLASS);
+    } else if (customer.limits.weeklyAmountIsChanged && !customer.limits.weeklyAmountIsValid) {
+        weekInput.classList.add(ERROR_CSS_CLASS);
+    } else if (customer.limits.monthlyAmountIsChanged && !customer.limits.monthlyAmountIsValid) {
+        monthInput.classList.add(ERROR_CSS_CLASS);
+    }
 };
 
 const resetForm = (id, value) => {
@@ -22,23 +52,17 @@ const resetInput = (id, value) => {
     }
 }
 
-//
-// Constants
-//
-const MONTH = 'month';
-const WEEK = 'week';
-const DAY = 'day';
-const MONTH_FORM = 'monthForm';
-const WEEK_FORM = 'weekForm';
-const DAY_FORM = 'dayForm';
-const SUBMIT = 'submit';
-const FORMDATA = 'formdata';
+const renderObject = (customer) => {
+    document.getElementById("customerObject").innerHTML = JSON.stringify(customer);
+}
 
 window.onload = function() {
 
-    let customer;
+    let customer = {};
     let isNew;
     let locked;
+
+    renderObject(customer);
 
     //
     // Type form - For development test purposes only
@@ -99,7 +123,8 @@ window.onload = function() {
             enableInput(WEEK);
             enableInput(DAY);
         }
-        
+        renderObject(customer);
+        renderInputErrorClass(customer);
     });
 
     //
@@ -124,13 +149,6 @@ window.onload = function() {
             if (!customer.limits.monthlyAmountIsValid) {
                 if (customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
                     alert('Din veckogräns är högre än din månadsgräns');
-                    //
-                    // We do not want to raise monthly limit, instead encourage to lower weekly limit -> Switch validity between month and week
-                    //
-                    customer.limits.monthlyAmount = input;
-                    customer.limits.monthlyAmountIsValid = true;
-                    customer.limits.weeklyAmountIsValid = false;
-
                 } else if (input < customer.minAmount) {
                     alert("Minsta belopp är 25");
                 } else if (customer.isYoungster) {
@@ -152,6 +170,8 @@ window.onload = function() {
             }
             
         }
+        renderObject(customer);
+        renderInputErrorClass(customer);
     });
 
     //
@@ -179,12 +199,6 @@ window.onload = function() {
 
                 } else if (customer.limits.dailyAmount > customer.limits.weeklyAmount) {
                     alert('Din dagsgräns är högre än din veckogräns.');
-                    //
-                    // We do not want to raise weekly limit, instead encourage to lower daily limit -> Switch validity between week and day
-                    //
-                    customer.limits.weeklyAmount = input;
-                    customer.limits.weeklyAmountIsValid = true;
-                    customer.limits.dailyAmountIsValid = false;
                 }
             } else {
                 if (customer.limits.weeklyAmountIsHigherThanMedian) {
@@ -200,6 +214,8 @@ window.onload = function() {
                 }
             }
         };
+        renderObject(customer);
+        renderInputErrorClass(customer);
     });
 
     //
@@ -239,6 +255,8 @@ window.onload = function() {
                     console.log(customer);
                 }
             }
-        };        
+        };
+        renderObject(customer);     
+        renderInputErrorClass(customer);
     });
 }

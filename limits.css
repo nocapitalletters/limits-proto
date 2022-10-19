@@ -36,6 +36,7 @@ button, input {
 .content {
     padding: 1rem;
     margin: 2rem;
+    width: 600px;
 }
 
 #typeForm, #lockedForm {
@@ -65,4 +66,18 @@ iframe {
 .dotted {
     border-bottom: 2px dotted #fabfff;
     padding-bottom: 12px;
+}
+
+.code {
+    width: 95%;
+    min-height: 300px;
+    background: black;
+    color: white;
+    padding: 12px;
+    word-break: break-word;
+    margin: 0;
+}
+
+.error {
+    border: 1px solid red;
 }
