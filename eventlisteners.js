@@ -20,7 +20,7 @@ const enableInput = (id, value) => {
     };
 };
 
-const renderInputErrorClass = (customer) => {
+const renderInputError = (customer, input, inputType) => {
     const dayInput = document.getElementById(DAY);
     const weekInput = document.getElementById(WEEK);
     const monthInput = document.getElementById(MONTH);
@@ -28,23 +28,107 @@ const renderInputErrorClass = (customer) => {
     weekInput.classList.remove(ERROR_CSS_CLASS);
     monthInput.classList.remove(ERROR_CSS_CLASS);
 
-    if (!customer.isExistingCustomer ) {
-        if (customer.limits.dailyAmountIsChanged && !customer.limits.dailyAmountIsValid) {
+    //
+    // Ny kund
+    //
+    if (!customer.isExistingCustomer) {
+        if (inputType === DAY && customer.limits.dailyAmountIsChanged && !customer.limits.dailyAmountIsValid) {
             dayInput.classList.add(ERROR_CSS_CLASS);
-        } else if (customer.limits.weeklyAmountIsChanged && !customer.limits.weeklyAmountIsValid) {
-            weekInput.classList.add(ERROR_CSS_CLASS);
-        } else if (customer.limits.monthlyAmountIsChanged && !customer.limits.monthlyAmountIsValid) {
-            monthInput.classList.add(ERROR_CSS_CLASS);
         }
-    } else {
+        if (inputType === WEEK && customer.limits.weeklyAmountIsChanged && !customer.limits.weeklyAmountIsValid) {
+            weekInput.classList.add(ERROR_CSS_CLASS);
+        }
+        if (inputType === MONTH && customer.limits.monthlyAmountIsChanged && !customer.limits.monthlyAmountIsValid && customer.isYoungster) { 
+           monthInput.classList.add(ERROR_CSS_CLASS);
+        }
+    } 
+    //
+    // Existerande kund
+    //
+    else {
         if (!customer.limits.dailyAmountIsValid) {
             dayInput.classList.add(ERROR_CSS_CLASS);
-        } else if (!customer.limits.weeklyAmountIsValid) {
+        }
+        if (!customer.limits.weeklyAmountIsValid) {
             weekInput.classList.add(ERROR_CSS_CLASS);
-        } else if (!customer.limits.monthlyAmountIsValid) {
-            monthInput.classList.add(ERROR_CSS_CLASS);
+        }
+        //if (!customer.limits.monthlyAmountIsValid) {
+          //  monthInput.classList.add(ERROR_CSS_CLASS);
+        //}
+    }
+};
+
+const renderMessage = (customer, input, inputType) => {
+    if (input < customer.minAmount) {
+        alert("Minsta belopp är 25");
+        return;
+    }
+    //
+    // Högre än maxgräns för youngster
+    //
+    if (customer.isYoungster) {
+        if (inputType === MONTH && customer.limits.monthlyAmountIsHigherThanThreshold) {
+            alert("Månadsgräns är högre än maxgräns på " + customer.monthlyThresholdAmount);
+        }
+        if (inputType === WEEK && customer.limits.weeklyAmountIsHigherThanThreshold) {
+            alert("Veckogräns är högre än maxgräns på " + customer.monthlyThresholdAmount);
+        }
+        if (inputType === DAY && customer.limits.dailyAmountIsHigherThanThreshold) {
+            alert("Dagsgräns är högre än maxgräns på " + customer.monthlyThresholdAmount);
+        }
+        
+    } else {
+        //
+        // Högre än median för vuxna
+        //
+        if (inputType === MONTH && customer.limits.monthlyAmountIsHigherThanMedian) {
+            alert('Månad -- Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerMonth);
+        }
+        if (inputType === WEEK && customer.limits.weeklyAmountIsHigherThanMedian) {
+            alert('Vecka -- Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerWeek);
+        }
+        if (inputType === DAY && customer.limits.dailyAmountIsHigherThanMedian) {
+            alert('Dag -- Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerDay);
         }
     }
+    
+    //
+    // Ny kund
+    //
+    if (!customer.isExistingCustomer ) {
+        if (customer.limits.dailyAmountIsChanged && !customer.limits.dailyAmountIsValid) {
+            if (customer.limits.weeklyAmountIsChanged && customer.limits.dailyAmount > customer.limits.weeklyAmount) {
+                alert('Din dagsgräns är högre än din veckogräns.');
+            }
+        }
+        if (customer.limits.weeklyAmountIsChanged && !customer.limits.weeklyAmountIsValid) {
+            if (customer.limits.monthlyAmountIsChanged && customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
+                alert('Din veckogräns är högre än din månadsgräns');
+            }
+        }
+        //if (customer.limits.monthlyAmountIsChanged && !customer.limits.monthlyAmountIsValid) {
+           // monthInput.classList.add(ERROR_CSS_CLASS);
+        //}
+    } 
+    //
+    // Existerande kund
+    //
+    else {
+        if (customer.limits.dailyAmount > customer.limits.weeklyAmount) {
+            alert('Din dagsgräns är högre än din veckogräns.');
+        }
+        if (customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
+            alert('Din veckogräns är högre än din månadsgräns');
+        }
+    }
+        //if (!customer.limits.monthlyAmountIsValid) {
+          //  monthInput.classList.add(ERROR_CSS_CLASS);
+        //}
+};
+
+const renderWinMessage = () => {
+    document.getElementById('iframe').style.display = 'block';
+    alert('DU VARVADE SPELET! :)');
 };
 
 const resetInput = (id, value) => {
@@ -66,7 +150,7 @@ window.onload = function() {
     renderObject(customer);
 
     //
-    // Type form - For development test purposes only
+    // Locked form - For development test purposes only
     //
     const lockedForm = document.getElementById('lockedForm');
     lockedForm.addEventListener(SUBMIT, function(event) {
@@ -125,7 +209,6 @@ window.onload = function() {
             enableInput(DAY);
         }
         renderObject(customer);
-        renderInputErrorClass(customer);
     });
 
     //
@@ -147,32 +230,13 @@ window.onload = function() {
             resetInput(MONTH, customer.limits.monthlyAmount);
         } else {
             customer.limits.setMonthly = input;
-            if (!customer.limits.monthlyAmountIsValid) {
-                if (customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
-                    alert('Din veckogräns är högre än din månadsgräns');
-                } else if (input < customer.minAmount) {
-                    alert("Minsta belopp är 25");
-                } else if (customer.isYoungster) {
-                    alert('Eftersom du är under 20 år så är din maxgräns ' + customer.monthlyThresholdAmount);
-                } 
+            if (customer.limits.areValid) {
+                renderWinMessage();
             }
-            else {
-                if (customer.limits.monthlyAmountIsHigherThanMedian) {
-                    alert('Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerMonth);
-                }
-                if (customer.limits.areValid) {
-                    if (customer.limits.monthlyAmount > customer.monthlyThresholdAmount) {
-                        alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount);
-                    }
-                    document.getElementById('iframe').style.display = 'block';
-                    alert('DU VARVADE SPELET! :)');
-                    console.log(customer);
-                }
-            }
-            
         }
+        renderMessage(customer, input, MONTH);
+        renderInputError(customer, input, MONTH);
         renderObject(customer);
-        renderInputErrorClass(customer);
     });
 
     //
@@ -194,29 +258,13 @@ window.onload = function() {
             resetInput(WEEK, customer.limits.weeklyAmount);
         } else {
             customer.limits.setWeekly = input;
-            if (!customer.limits.weeklyAmountIsValid) {
-                if (customer.limits.weeklyAmount > customer.limits.monthlyAmount) {
-                    alert('Din veckogräns är högre än din månadsgräns.');
-
-                } else if (customer.limits.dailyAmount > customer.limits.weeklyAmount) {
-                    alert('Din dagsgräns är högre än din veckogräns.');
-                }
-            } else {
-                if (customer.limits.weeklyAmountIsHigherThanMedian) {
-                    alert('Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerWeek);
-                }
-                if (customer.limits.areValid) {
-                    if (customer.limits.monthlyAmount > customer.monthlyThresholdAmount) {
-                        alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount);
-                    }
-                    document.getElementById('iframe').style.display = 'block';
-                    alert('DU VARVADE SPELET! :)');
-                    console.log(customer);
-                }
+            if (customer.limits.areValid) {
+                renderWinMessage();
             }
-        };
+        }
+        renderMessage(customer, input, WEEK);
+        renderInputError(customer, input, WEEK);
         renderObject(customer);
-        renderInputErrorClass(customer);
     });
 
     //
@@ -238,26 +286,13 @@ window.onload = function() {
             resetInput(DAY, customer.limits.dailyAmount);
         } else {
             customer.limits.setDaily = input;
-            if (!customer.limits.dailyAmountIsValid) {
-                if (customer.limits.dailyAmount > customer.limits.weeklyAmount) {
-                    alert('Din dagsgräns är högre än din veckogräns.');
-                }
-            } 
-            else {
-                if (customer.limits.dailyAmountIsHigherThanMedian) {
-                    alert('Tips: De flesta sätter en gräns på ' + customer.limits.medianDepositLimitPerDay);
-                }
-                if (customer.limits.areValid) {
-                    if (customer.limits.monthlyAmount > customer.monthlyThresholdAmount) {
-                        alert('Information om prövning av ekonomisk förmåga: ' + 'vi brukar rekommendera en maxgräns på ' + customer.monthlyThresholdAmount);
-                    }
-                    document.getElementById('iframe').style.display = 'block';
-                    alert('DU VARVADE SPELET! :)');
-                    console.log(customer);
-                }
+            if (customer.limits.areValid) {
+                renderWinMessage();
             }
         };
-        renderObject(customer);     
-        renderInputErrorClass(customer);
+            
+        renderMessage(customer, input, DAY);
+        renderInputError(customer, input, DAY);
+        renderObject(customer); 
     });
 }
