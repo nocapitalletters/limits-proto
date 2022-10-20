@@ -43,7 +43,6 @@ class BaseLimitCustomer {
                 this.monthlyAmount = inputMonthlyAmount;
                 this.monthlyAmountIsChanged = true;
                 this.setMonthlyIsHigherThanMedian();
-                console.log(self.monthlyThresholdAmount);
                 this.monthlyAmountIsHigherThanThreshold = this.isMoreOrEqualToMonthlyThreshold(this.monthlyAmount);
                 this.monthlyAmountIsValid = this.validateMonth(this.monthlyAmount);
                 this.validateAll();
@@ -55,7 +54,6 @@ class BaseLimitCustomer {
                 this.weeklyAmount = inputWeeklyAmount;
                 this.weeklyAmountIsChanged = true;
                 this.setWeeklyIsHigherThanMedian();
-                console.log(self.monthlyThresholdAmount);
                 this.weeklyAmountIsHigherThanThreshold = this.isMoreOrEqualToMonthlyThreshold(this.weeklyAmount);
                 this.weeklyAmountIsValid = this.validateWeek(this.weeklyAmount);
                 this.validateAll();
@@ -67,10 +65,6 @@ class BaseLimitCustomer {
                 this.dailyAmount = inputDailyAmount;
                 this.dailyAmountIsChanged = true;
                 this.setDailyIsHigherThanMedian();
-                console.log(self.monthlyThresholdAmount);
-                console.log(this.dailyAmount);
-                let booooool = this.dailyAmount > self.monthlyThresholdAmount
-                console.log(booooool);
                 this.dailyAmountIsHigherThanThreshold = this.isMoreOrEqualToMonthlyThreshold(this.dailyAmount);
                 this.dailyAmountIsValid = this.validateDay(this.dailyAmount);
                 this.validateAll();
@@ -94,10 +88,19 @@ class BaseLimitCustomer {
                 this.dailyAmountIsHigherThanMedian = this.dailyAmount > this.medianDepositLimitPerDay;
             },
             setLimitsAreValid: () => {
-                this.limits.areValid =
-                    this.limits.monthlyAmountIsValid &&
-                    this.limits.weeklyAmountIsValid &&
-                    this.limits.dailyAmountIsValid;
+                let validity;
+                if (self.isYoungster) {
+                    validity = 
+                        this.limits.monthlyAmountIsValid && !this.limits.monthlyAmountIsHigherThanThreshold &&
+                        this.limits.weeklyAmountIsValid && !this.limits.weeklyAmountIsHigherThanThreshold &&
+                        this.limits.dailyAmountIsValid && !this.dailyAmountIsHigherThanThreshold;
+                } else {
+                    validity = 
+                        this.limits.monthlyAmountIsValid &&
+                        this.limits.weeklyAmountIsValid &&
+                        this.limits.dailyAmountIsValid;
+                }
+                this.limits.areValid = validity;
             },
             /**
              * @param {number} amountToValidate
@@ -111,19 +114,16 @@ class BaseLimitCustomer {
             },
             validateMonth: (monthlyAmount) => {
                 return this.limits.validateAgainstMin(monthlyAmount) && 
-                !this.limits.monthlyAmountIsHigherThanThreshold && 
                 this.limits.isMoreOrEqualToWeeklyAmount(monthlyAmount) && 
                 this.limits.isMoreOrEqualToDailyAmount(monthlyAmount);
             },
             validateWeek: (weeklyAmount) => {
                 return this.limits.validateAgainstMin(weeklyAmount) && 
-                !this.limits.weeklyAmountIsHigherThanThreshold && 
                 this.limits.isLessOrEqualToMonthlyAmount(weeklyAmount) && 
                 this.limits.isMoreOrEqualToDailyAmount(weeklyAmount)
             },
             validateDay: (dailyAmount) => {
                 return this.limits.validateAgainstMin(dailyAmount) && 
-                !this.dailyAmountIsHigherThanThreshold && 
                 this.limits.isLessOrEqualToMonthlyAmount(dailyAmount) && 
                 this.limits.isLessOrEqualToWeeklyAmount(dailyAmount)
             },

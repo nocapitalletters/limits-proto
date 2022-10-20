@@ -28,6 +28,17 @@ const renderInputError = (customer, input, inputType) => {
     weekInput.classList.remove(ERROR_CSS_CLASS);
     monthInput.classList.remove(ERROR_CSS_CLASS);
 
+    if (customer.isYoungster) {
+        if (customer.limits.dailyAmountIsHigherThanThreshold) {
+            dayInput.classList.add(ERROR_CSS_CLASS);
+        }
+        if (customer.limits.weeklyAmountIsHigherThanThreshold) {
+            weekInput.classList.add(ERROR_CSS_CLASS);
+        }
+        if (customer.limits.monthlyAmountIsHigherThanThreshold) {
+            monthInput.classList.add(ERROR_CSS_CLASS);
+        }
+    }
     //
     // Ny kund
     //
@@ -67,13 +78,13 @@ const renderMessage = (customer, input, inputType) => {
     // Högre än maxgräns för youngster
     //
     if (customer.isYoungster) {
-        if (inputType === MONTH && customer.limits.monthlyAmountIsHigherThanThreshold) {
+        if (customer.limits.monthlyAmountIsHigherThanThreshold) {
             alert("Månadsgräns är högre än maxgräns på " + customer.monthlyThresholdAmount);
         }
-        if (inputType === WEEK && customer.limits.weeklyAmountIsHigherThanThreshold) {
+        if (customer.limits.weeklyAmountIsHigherThanThreshold) {
             alert("Veckogräns är högre än maxgräns på " + customer.monthlyThresholdAmount);
         }
-        if (inputType === DAY && customer.limits.dailyAmountIsHigherThanThreshold) {
+        if (customer.limits.dailyAmountIsHigherThanThreshold) {
             alert("Dagsgräns är högre än maxgräns på " + customer.monthlyThresholdAmount);
         }
         
@@ -126,7 +137,10 @@ const renderMessage = (customer, input, inputType) => {
         //}
 };
 
-const renderWinMessage = () => {
+const renderWinMessage = (thresholdBreak) => {
+    if (thresholdBreak) {
+        alert('Du vill bränna svinmycket pengar så vi kommer kolla om du är god för det.');
+    }
     document.getElementById('iframe').style.display = 'block';
     alert('DU VARVADE SPELET! :)');
 };
@@ -231,7 +245,7 @@ window.onload = function() {
         } else {
             customer.limits.setMonthly = input;
             if (customer.limits.areValid) {
-                renderWinMessage();
+                renderWinMessage(customer.limits.monthlyAmountIsHigherThanThreshold || customer.limits.weeklyAmountIsHigherThanThreshold || customer.dailyAmountIsHigherThanThreshold);
             }
         }
         renderMessage(customer, input, MONTH);
@@ -259,7 +273,7 @@ window.onload = function() {
         } else {
             customer.limits.setWeekly = input;
             if (customer.limits.areValid) {
-                renderWinMessage();
+                renderWinMessage(customer.limits.monthlyAmountIsHigherThanThreshold || customer.limits.weeklyAmountIsHigherThanThreshold || customer.dailyAmountIsHigherThanThreshold);
             }
         }
         renderMessage(customer, input, WEEK);
@@ -287,7 +301,7 @@ window.onload = function() {
         } else {
             customer.limits.setDaily = input;
             if (customer.limits.areValid) {
-                renderWinMessage();
+                renderWinMessage(customer.limits.monthlyAmountIsHigherThanThreshold || customer.limits.weeklyAmountIsHigherThanThreshold || customer.dailyAmountIsHigherThanThreshold);
             }
         };
             
